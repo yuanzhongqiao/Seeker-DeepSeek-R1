@@ -3,13 +3,18 @@
   "displayName": "Seeker",
   "description": "A VS Code extension to interact with DeepSeek R1 using Ollama.",
   "version": "1.0.0",
-  "publisher": "Satwik Singh",
+  "publisher": "SatwikSingh",
   "engines": {
     "vscode": "^1.96.0"
   },
   "categories": [
     "Other"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/s000ik/Seeker-DeepSeek-R1"
+  },
+  "icon": "images/icon.png",
   "activationEvents": [
     "onCommand:seeker.query"
   ],
