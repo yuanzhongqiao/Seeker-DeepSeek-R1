@@ -1,75 +1,125 @@
-<<<<<<< HEAD
-# seeker README
+<p align="center">
+  <img src="images/Seeker.png" width="900" alt="Seeker">
+</p>
 
-This is the README for your extension "seeker". After writing up a brief description, we recommend including the following sections.
+# Seeker: DeepSeek-R1 Integration for VS Code
 
-## Features
-
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
-
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
-
-## Requirements
-
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
-
-## Extension Settings
-
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
+Seeker enables seamless interaction with DeepSeek-R1 reasoning models directly within Visual Studio Code, leveraging the power of Ollama's local runtime. Designed for privacy, performance, and usability, Seeker offers a modern AI-assisted coding experience with no internet connection required. Whether you’re working on resource-constrained hardware or high-end systems, Seeker supports a range of DeepSeek-R1 models to fit your needs.
 
 ---
 
-## Following extension guidelines
+## Key Features
 
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
+- **Local Model Execution**: Run DeepSeek-R1 models entirely on your local machine using Ollama. No data ever leaves your environment.
+- **Privacy-First AI**: Offline functionality ensures complete data privacy.
+- **Model Flexibility**: Supports all DeepSeek-R1 model sizes—from 1.5B to 671B parameters.
+- **Integrated Chat Interface**: Engage with a clean, modern chat interface embedded directly into VS Code.
+- **Hardware-Based Performance**: Select models based on your machine’s capabilities.
+- **Context-Aware Assistance**: Enhance productivity with AI-driven insights tailored to your coding environment.
 
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
+---
 
-## Working with Markdown
+## DeepSeek-R1 Model Overview
 
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
+DeepSeek-R1 is DeepSeek’s first-generation reasoning model series, rivaling the performance of OpenAI-o1 across diverse tasks like mathematics, programming, and logical reasoning. The series includes distilled variants optimized for smaller hardware footprints, as well as massive server-grade models for maximum capability.
 
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
+### Available Models
 
-## For more information
+<div align="center">
 
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
+| Model Name | Parameters | Model Size | Use Case |
+|:----------:|:----------:|:----------:|:----------:|
+| DeepSeek-R1-Distill-Qwen-1.5B | 1.5B | 1.1GB | Basic tasks, resource-constrained systems |
+| DeepSeek-R1-Distill-Qwen-7B | 7B | 4.7GB | General-purpose, recommended for most users |
+| DeepSeek-R1-Distill-Llama-8B | 8B | 4.9GB | Slightly more complex tasks, moderate hardware |
+| DeepSeek-R1-Distill-Qwen-14B | 14B | 9.0GB | Advanced reasoning, larger models |
+| DeepSeek-R1-Distill-Qwen-32B | 32B | 20GB | High-performance workloads, AI research |
+| DeepSeek-R1-Distill-Llama-70B | 70B | 43GB | Complex reasoning, enterprise-grade usage |
+| DeepSeek-R1 | 671B | 404GB | Server grade, maximum capability |
 
-**Enjoy!**
-=======
-# Seeker-DeepSeek-R1
->>>>>>> f75c89f7d86f6ce742589d567153013789a2e4a8
+</div>
+
+---
+
+## Requirements
+
+1. **Ollama**: Install Ollama from [ollama.ai](https://ollama.ai/) to enable local model execution.
+2. **Hardware**: Ensure sufficient system resources based on your chosen model.
+3. **Visual Studio Code**: Ensure you have the latest version installed.
+
+---
+
+## Installation
+
+### Step 1: Install Seeker
+- Download and install Seeker from the VS Code Marketplace or via the VSIX file.
+
+### Step 2: Set Up Ollama
+- Download and install Ollama from [ollama.ai](https://ollama.ai).
+- [Optional] Use the following command to download your preferred DeepSeek-R1 model:
+
+```bash
+ollama run deepseek-r1:1.5b   # Smallest model
+ollama run deepseek-r1:7b     # Recommended model
+```
+
+---
+
+## Usage
+
+1. **Open Seeker in VS Code**:
+   - Launch Visual Studio Code.
+   - Press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (Mac).
+   - Select **Seeker: Query DeepSeek**.
+
+2. **Start Chatting**:
+   - Engage with DeepSeek-R1 models in a modern, intuitive interface.
+
+3. **Model Selection**:
+   - Default model: `deepseek-r1:1.5b`.
+   - Change model via VS Code settings:
+     - Open settings and search for “Seeker”.
+     - Update the model name (e.g., `deepseek-r1:7b`).
+
+---
+
+## Known Issues
+
+- **First-Time Setup**: Initial model downloads may take some time.
+- **Memory Usage**: Ensure your system meets the requirements of your chosen model.
+
+---
+
+## Privacy & Security
+
+- **Local Execution**: All processing occurs on your machine.
+- **No Internet Required**: Full offline functionality ensures your prompts and responses remain private.
+- **Data Sovereignty**: No data is sent to external servers.
+
+---
+
+## License
+
+Seeker is licensed under the MIT License, allowing for commercial use, modifications, and derivative works. For details, see the [LICENSE](LICENSE) file.
+
+DeepSeek-R1 models are similarly available for commercial use and modification, with additional licensing information for Qwen and Llama-derived models:
+- **Qwen Models**: Based on Apache 2.0 License.
+- **Llama Models**: Licensed under Llama3 series licenses.
+
+---
+
+## Contributing
+
+Contributions are welcome! If you have ideas, bug fixes, or feature requests, feel free to submit a Pull Request or open an issue.
+
+---
+
+## Acknowledgments
+
+- **DeepSeek AI**: For developing the cutting-edge DeepSeek-R1 models.
+- **Ollama**: For providing a seamless local runtime.
+
+---
+
+Experience the future of AI-assisted coding with Seeker. Unlock the full potential of DeepSeek-R1 models, privately and efficiently, right in your editor.
+
