@@ -2,7 +2,7 @@
   "name": "seeker",
   "displayName": "Seeker",
   "description": "A VS Code extension to interact with DeepSeek R1 using Ollama.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "publisher": "SatwikSingh",
   "engines": {
     "vscode": "^1.96.0"
@@ -20,12 +20,58 @@
   ],
   "main": "./dist/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "seeker-sidebar",
+          "title": "Seeker",
+          "icon": "images/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "seeker-sidebar": [
+        {
+          "id": "seekerChat",
+          "name": "DeepSeek R1 Chat",
+          "type": "webview"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "seeker.query",
         "title": "Seeker: Query DeepSeek"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Seeker",
+      "properties": {
+        "seeker.model": {
+          "type": "string",
+          "default": "deepseek-r1:1.5b",
+          "enum": [
+            "deepseek-r1:1.5b",
+            "deepseek-r1:7b",
+            "deepseek-r1:8b",
+            "deepseek-r1:14b",
+            "deepseek-r1:32b",
+            "deepseek-r1:70b",
+            "deepseek-r1:671b"
+          ],
+          "enumDescriptions": [
+            "Basic tasks, resource-constrained systems (1.1GB)",
+            "General-purpose, recommended for most users (4.7GB)",
+            "Slightly more complex tasks, moderate hardware (4.9GB)",
+            "Advanced reasoning, larger models (9.0GB)",
+            "High-performance workloads, AI research (20GB)",
+            "Complex reasoning, enterprise-grade usage (43GB)",
+            "Server grade, maximum capability (404GB)"
+          ],
+          "description": "Select which DeepSeek model to use"
+        }
+      }
+    }
   },
   "dependencies": {
     "axios": "^1.7.9"

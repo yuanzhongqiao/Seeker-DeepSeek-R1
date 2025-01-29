@@ -100,9 +100,18 @@ ollama run deepseek-r1:7b     # Recommended model
 
 ## Known Issues
 
-- **First-Time Setup**: Initial model downloads may take some time.
+- **First-Time Setup or Model Switching**: Initial model downloads may take some time.
 - **Memory Usage**: Ensure your system meets the requirements of your chosen model.
-
+- **Download Issues**: If downloads fail or get interrupted, you may need to:
+  1. Stop Ollama service (or quit the extension)
+  2. Delete contents of `~\.ollama\models\blobs` to remove partial downloads
+  3. Restart Ollama service
+  4. Try downloading again
+- **Manual Model Cleanup**: To free up disk space, you can:
+  1. Stop Ollama service (or quit the extension)
+  2. Delete contents of `~\.ollama\models\blobs`
+  3. Restart Ollama service
+  
 ---
 
 ## Privacy & Security

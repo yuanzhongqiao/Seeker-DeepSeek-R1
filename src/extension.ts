@@ -3,56 +3,229 @@ import axios from 'axios';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 
-
+let statusBarItem: vscode.StatusBarItem | undefined;
 const execAsync = promisify(exec);
 const OLLAMA_API_URL = 'http://localhost:11434/api/generate';
-const MODEL_NAME = 'deepseek-r1:1.5b'; // 'You can change this to any model you want to use'
+
+function getModelName(): string {
+    return vscode.workspace.getConfiguration('seeker').get('model') || 'deepseek-r1:1.5b';
+}
+
+function createStatusBarItem() {
+    if (statusBarItem) {
+        return statusBarItem;
+    }
+    statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
+    statusBarItem.text = "$(sync~spin) Seeker is running...";
+    return statusBarItem;
+}
 
 async function startOllama(): Promise<void> {
-	try {
-		// Check if Ollama is already running
-		await axios.get('http://localhost:11434/api/tags');
-	} catch {
-		try {
-			// Start Ollama with the DeepSeek model
-			await execAsync(`ollama run ${MODEL_NAME}`);
-		} catch (error) {
-			vscode.window.showErrorMessage('Failed to start Ollama. Please make sure it is installed.');
-			throw error;
-		}
-	}
+    try {
+        await axios.get('http://localhost:11434/api/tags');
+        
+        try {
+            await axios.post(OLLAMA_API_URL, {
+                model: getModelName(),
+                prompt: "test",
+                stream: false
+            });
+        } catch {
+            // Create and show status bar immediately
+            const statusBar = createStatusBarItem();
+            statusBar.text = "$(sync~spin) Initializing download...";
+            statusBar.show();
+            
+            console.log('Starting model download...');
+            const child = exec(`ollama pull ${getModelName()}`);
+            
+            // Debug stderr output
+            child.stderr?.on('data', (data: string) => {
+                const output = data.toString();
+                console.log('stderr:', output);
+                
+                // Updated pattern to handle both MB and GB
+                const progressMatch = output.match(/(\d+)%.*?(\d+(?:\.\d+)?)\s*(MB|GB)\/(\d+(?:\.\d+)?)\s*(MB|GB)/);
+                if (progressMatch) {
+                    const [, progress, downloaded, downloadedUnit, total, totalUnit] = progressMatch;
+                    console.log('Progress match:', { progress, downloaded, downloadedUnit, total, totalUnit });
+                    
+                    // Convert everything to GB for display
+                    const downloadedGB = downloadedUnit === 'GB' ? 
+                        parseFloat(downloaded) : 
+                        parseFloat(downloaded) / 1024;
+                        
+                    const totalGB = totalUnit === 'GB' ? 
+                        parseFloat(total) : 
+                        parseFloat(total) / 1024;
+                    
+                    if (statusBarItem) {
+                        const newText = `$(sync~spin) Downloading DeepSeek model: ${downloadedGB.toFixed(2)}GB / ${totalGB.toFixed(2)}GB (${progress}%)`;
+                        console.log('Updating status bar:', newText);
+                        statusBarItem.text = newText;
+                    } else {
+                        console.log('Status bar item is undefined');
+                    }
+                } else {
+                    console.log('No progress match found in:', output);
+                }
+            });
+
+            await new Promise<void>((resolve, reject) => {
+                child.on('close', (code) => {
+                    console.log('Process closed with code:', code);
+                    if (code === 0) {
+                        if (statusBarItem) {
+                            statusBarItem.text = "$(check) Model ready";
+                            setTimeout(() => {
+                                if (statusBarItem) {
+                                    statusBarItem.hide();
+                                    statusBarItem.dispose();
+                                    statusBarItem = undefined;
+                                }
+                            }, 2000);
+                        }
+                        resolve();
+                    } else {
+                        reject(new Error(`Download failed with code ${code}`));
+                    }
+                });
+                child.on('error', (error) => {
+                    console.error('Process error:', error);
+                    reject(error);
+                });
+            });
+        }
+    } catch (error) {
+        console.error('Start Ollama error:', error);
+        if (statusBarItem) {
+            statusBarItem.hide();
+            statusBarItem.dispose();
+            statusBarItem = undefined;
+        }
+        vscode.window.showErrorMessage('Failed to start Ollama. Please make sure it is installed and running.');
+        throw error;
+    }
 }
 
-async function queryOllama(prompt: string, panel: vscode.WebviewPanel): Promise<string> {
-	try {
-		const response = await axios.post(OLLAMA_API_URL, {
-			model: 'deepseek-r1:1.5b',
-			prompt: prompt,
-			stream: true,
-		}, {
-			responseType: 'stream'
-		});
+async function queryOllama(prompt: string, webview: vscode.Webview): Promise<string> {
+    try {
+        const response = await axios.post(OLLAMA_API_URL, {
+            model: getModelName(),
+            prompt: prompt,
+            stream: true,
+        }, {
+            responseType: 'stream'
+        });
 
-		let fullResponse = '';
+        let fullResponse = '';
 
-		response.data.on('data', (chunk: Buffer) => {
-			try {
-				const chunkStr = chunk.toString();
-				const parsed = JSON.parse(chunkStr);
-				fullResponse += parsed.response;
-				panel.webview.postMessage({ type: 'response', content: fullResponse });
-			} catch (e) {
-				console.error('Error parsing chunk:', e);
-			}
-		});
+        return new Promise((resolve, reject) => {
+            response.data.on('data', (chunk: Buffer) => {
+                try {
+                    const chunkStr = chunk.toString();
+                    const parsed = JSON.parse(chunkStr);
+                    fullResponse += parsed.response;
+                    webview.postMessage({ type: 'response', content: fullResponse });
+                } catch (e) {
+                    console.error('Error parsing chunk:', e);
+                }
+            });
 
-		return fullResponse;
-	} catch (error) {
-		console.error('Error querying Ollama:', error);
-		throw error;
-	}
+            response.data.on('end', () => {
+                resolve(fullResponse);
+            });
+
+            response.data.on('error', (err: Error) => {
+                reject(err);
+            });
+        });
+    } catch (error) {
+        console.error('Error querying Ollama:', error);
+        throw error;
+    }
 }
 
+// Create a new webview panel
+async function createChatPanel() {
+    const panel = vscode.window.createWebviewPanel(
+        'seekerChat',
+        'Seeker Chat',
+        vscode.ViewColumn.Beside,
+        { enableScripts: true }
+    );
+
+    panel.webview.html = getWebviewContent();
+
+    panel.webview.onDidReceiveMessage(async message => {
+        if (message.type === 'prompt') {
+            try {
+                await startOllama();
+                await queryOllama(message.content, panel.webview);
+            } catch (error) {
+                vscode.window.showErrorMessage('Failed to query DeepSeek. Make sure Ollama is running.');
+            }
+        }
+    });
+}
+
+class SeekerViewProvider implements vscode.WebviewViewProvider {
+    constructor(private readonly _extensionUri: vscode.Uri) {}
+
+    public async resolveWebviewView(
+        webviewView: vscode.WebviewView,
+        context: vscode.WebviewViewResolveContext,
+        _token: vscode.CancellationToken
+    ) {
+        webviewView.webview.options = {
+            enableScripts: true
+        };
+
+        webviewView.webview.html = getWebviewContent();
+
+        webviewView.webview.onDidReceiveMessage(async message => {
+            if (message.type === 'prompt') {
+                try {
+                    await startOllama();
+                    await queryOllama(message.content, webviewView.webview);
+                } catch (error) {
+                    vscode.window.showErrorMessage('Failed to query DeepSeek. Make sure Ollama is running.');
+                }
+            }
+        });
+    }
+}
+
+export function activate(context: vscode.ExtensionContext) {
+    // Register the sidebar webview provider
+    const provider = new SeekerViewProvider(context.extensionUri);
+    context.subscriptions.push(
+        vscode.window.registerWebviewViewProvider('seekerChat', provider)
+    );
+
+    // Register the command to open the chat panel
+    let disposable = vscode.commands.registerCommand('seeker.query', createChatPanel);
+    context.subscriptions.push(disposable);
+}
+
+export function deactivate() {
+    // Clean up status bar item
+    if (statusBarItem) {
+        statusBarItem.hide();
+        statusBarItem.dispose();
+        statusBarItem = undefined;
+    }
+
+    // Kill any running Ollama processes
+    return new Promise<void>((resolve) => {
+        exec('taskkill /F /IM ollama.exe', (error) => {
+            if (error) {
+                console.log('Ollama process not found or already terminated');
+            }
+            resolve();
+        });
+    });
+}
 function getWebviewContent() {
 	return /*html*/`
         <!DOCTYPE html>
@@ -274,39 +447,3 @@ function getWebviewContent() {
         </html>
     `;
 }
-
-export function activate(context: vscode.ExtensionContext) {
-	let disposable = vscode.commands.registerCommand('seeker.query', async () => {
-		try {
-			// Try to start Ollama when the extension is activated
-			await startOllama();
-
-			const panel = vscode.window.createWebviewPanel(
-				'seekerChat',
-				'Seeker Chat',
-				vscode.ViewColumn.Beside,
-				{
-					enableScripts: true
-				}
-			);
-
-			panel.webview.html = getWebviewContent();
-
-			panel.webview.onDidReceiveMessage(async message => {
-				if (message.type === 'prompt') {
-					try {
-						await queryOllama(message.content, panel);
-					} catch (error) {
-						vscode.window.showErrorMessage('Failed to query DeepSeek. Make sure Ollama is running.');
-					}
-				}
-			});
-		} catch (error) {
-			console.error('Failed to start Ollama:', error);
-			vscode.window.showErrorMessage('Failed to initialize Seeker extension.');
-		}
-	});
-
-	context.subscriptions.push(disposable);
-}
-export function deactivate() { }
