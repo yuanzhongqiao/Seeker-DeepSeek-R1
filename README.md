@@ -10,9 +10,10 @@ Seeker enables seamless interaction with DeepSeek-R1 reasoning models directly w
 
 ## Key Features
 
-- **Local Model Execution**: Run DeepSeek-R1 models entirely on your local machine using Ollama. No data ever leaves your environment.
-- **Privacy-First AI**: Offline functionality ensures complete data privacy.
+- **Local Model Execution**: Run DeepSeek-R1 models entirely on your local machine using Ollama runtime. No data ever leaves your environment.
 - **Model Flexibility**: Supports all DeepSeek-R1 model sizes—from 1.5B to 671B parameters.
+- **[NEW] LLM Agnostic**: Compatible with any model available through Ollama (Llama, DeepSeek, Gemma, Mistral, etc.)
+- **Privacy-First AI**: Offline functionality ensures complete data privacy.
 - **Integrated Chat Interface**: Engage with a clean, modern chat interface embedded directly into VS Code.
 - **Hardware-Based Performance**: Select models based on your machine’s capabilities.
 - **Context-Aware Assistance**: Enhance productivity with AI-driven insights tailored to your coding environment.
@@ -56,11 +57,16 @@ DeepSeek-R1 is DeepSeek’s first-generation reasoning model series, rivaling th
 
 ### Step 2: Set Up Ollama
 - Download and install Ollama from [ollama.ai](https://ollama.ai).
-- [Optional] Use the following command to download your preferred DeepSeek-R1 model:
+- [Optional] Use the following command to download your preferred DeepSeek-R1 or any other model:
 
 ```bash
 ollama run deepseek-r1:1.5b   # Smallest model
 ollama run deepseek-r1:7b     # Recommended model
+
+# Seeker supports all Open Source LLMs available on Ollama
+ollama pull llama2:7b      # Meta's Llama 2
+ollama pull mistral:7b     # Mistral AI
+ollama pull gemma:7b       # Google's Gemma
 ```
 
 ---
@@ -70,16 +76,19 @@ ollama run deepseek-r1:7b     # Recommended model
 1. **Open Seeker in VS Code**:
    - Launch Visual Studio Code.
    - Press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (Mac).
-   - Select **Seeker: Query DeepSeek**.
+   - Select **Seeker: Query**.
 
-2. **Start Chatting**:
-   - Engage with DeepSeek-R1 models in a modern, intuitive interface.
-
-3. **Model Selection**:
+2. **Model Selection**:
    - Default model: `deepseek-r1:1.5b`.
    - Change model via VS Code settings:
      - Open settings and search for “Seeker”.
-     - Update the model name (e.g., `deepseek-r1:7b`).
+     - Select from preset models or choose "custom"
+     - For custom models, enter any Ollama model name (e.g., `qwen:0.5b`, `mistral:7b`).
+
+3. **Start Chatting**:
+   - Engage with chosen models in a modern, intuitive interface.
+   - Real-time responses with streaming.
+   - Keyboard shortcuts (Enter to send, Shift+Enter for newline)
 
 ---
 ## Running Seeker
@@ -111,20 +120,34 @@ ollama run deepseek-r1:7b     # Recommended model
   1. Stop Ollama service (or quit the extension)
   2. Delete contents of `~\.ollama\models\blobs`
   3. Restart Ollama service
-  
+
 ---
 
-## Privacy & Security
+## Why Seeker?
 
-- **Local Execution**: All processing occurs on your machine.
-- **No Internet Required**: Full offline functionality ensures your prompts and responses remain private.
-- **Data Sovereignty**: No data is sent to external servers.
+### Modern Interface  
+- Sleek sidebar integration with custom icon  
+- Clean chat UI with message timestamps  
+- Auto-resizing message input  
+- VS Code theme integration  
+
+### Model Management  
+- Live download progress in status bar  
+- Automatic model switching  
+- Download size and progress tracking  
+- Custom model support  
+
+### Privacy & Performance  
+- All processing done locally  
+- No internet connection required  
+- Efficient stream-based responses  
+- Automatic resource cleanup  
 
 ---
 
 ## License
 
-Seeker is licensed under the MIT License, allowing for commercial use, modifications, and derivative works. For details, see the [LICENSE](LICENSE) file.
+Seeker is licensed under the MIT License, allowing for commercial use, modifications, and derivative works. For details, see the [LICENSE](LICENSE) file. Individual model licenses apply based on your chosen LLM.
 
 DeepSeek-R1 models are similarly available for commercial use and modification, with additional licensing information for Qwen and Llama-derived models:
 - **Qwen Models**: Based on Apache 2.0 License.
@@ -142,8 +165,10 @@ Contributions are welcome! If you have ideas, bug fixes, or feature requests, fe
 
 - **DeepSeek AI**: For developing the cutting-edge DeepSeek-R1 models.
 - **Ollama**: For providing a seamless local runtime.
+- **Model Creators** : For the open-source models.
 
 ---
 
-Experience the future of AI-assisted coding with Seeker. Unlock the full potential of DeepSeek-R1 models, privately and efficiently, right on your machine.
+Experience privacy-focused AI assistance with any LLM, right in your editor with Seeker.
+
 

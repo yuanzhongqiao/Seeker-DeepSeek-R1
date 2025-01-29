@@ -2,7 +2,7 @@
   "name": "seeker",
   "displayName": "Seeker",
   "description": "A VS Code extension to interact with DeepSeek R1 using Ollama.",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "publisher": "SatwikSingh",
   "engines": {
     "vscode": "^1.96.0"
@@ -33,7 +33,7 @@
       "seeker-sidebar": [
         {
           "id": "seekerChat",
-          "name": "DeepSeek R1 Chat",
+          "name": "Chat",
           "type": "webview"
         }
       ]
@@ -41,7 +41,7 @@
     "commands": [
       {
         "command": "seeker.query",
-        "title": "Seeker: Query DeepSeek"
+        "title": "Seeker: Query"
       }
     ],
     "configuration": {
@@ -57,7 +57,8 @@
             "deepseek-r1:14b",
             "deepseek-r1:32b",
             "deepseek-r1:70b",
-            "deepseek-r1:671b"
+            "deepseek-r1:671b",
+            "custom"
           ],
           "enumDescriptions": [
             "Basic tasks, resource-constrained systems (1.1GB)",
@@ -66,9 +67,15 @@
             "Advanced reasoning, larger models (9.0GB)",
             "High-performance workloads, AI research (20GB)",
             "Complex reasoning, enterprise-grade usage (43GB)",
-            "Server grade, maximum capability (404GB)"
+            "Server grade, maximum capability (404GB)",
+            "Use a custom Ollama model"
           ],
-          "description": "Select which DeepSeek model to use"
+          "description": "Select which model to use"
+        },
+        "seeker.lastCustomModel": {
+          "type": "string",
+          "default": "",
+          "description": "Enter custom Ollama model name here (e.g., qwen:0.5b, llama2:7b) when using 'custom' model option"
         }
       }
     }

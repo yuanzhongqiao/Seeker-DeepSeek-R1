@@ -1,14 +1,46 @@
 import * as vscode from 'vscode';
 import axios from 'axios';
 import { exec } from 'child_process';
-import { promisify } from 'util';
 
+let cachedModelName: string | undefined;
+let lastKnownCustomModel: string | undefined;
 let statusBarItem: vscode.StatusBarItem | undefined;
-const execAsync = promisify(exec);
 const OLLAMA_API_URL = 'http://localhost:11434/api/generate';
 
-function getModelName(): string {
-    return vscode.workspace.getConfiguration('seeker').get('model') || 'deepseek-r1:1.5b';
+
+async function getModelName(): Promise<string> {
+    const config = vscode.workspace.getConfiguration('seeker');
+    const currentModel = config.get('model') as string;
+    
+    if (currentModel === 'custom') {
+        const customModel = config.get('lastCustomModel') as string;
+        
+        // Clear cache if custom model has changed
+        if (lastKnownCustomModel !== customModel) {
+            console.log('Custom model changed:', { from: lastKnownCustomModel, to: customModel });
+            cachedModelName = undefined;
+            lastKnownCustomModel = customModel;
+        }
+        
+        if (customModel) {
+            cachedModelName = customModel;
+            return customModel;
+        }
+        
+        // If no custom model is set, use default
+        cachedModelName = 'deepseek-r1:1.5b';
+        return cachedModelName;
+    }
+    
+    // Clear cache if switching from custom to preset model
+    if (lastKnownCustomModel) {
+        console.log('Switching from custom to preset model');
+        cachedModelName = undefined;
+        lastKnownCustomModel = undefined;
+    }
+    
+    cachedModelName = currentModel || 'deepseek-r1:1.5b';
+    return cachedModelName;
 }
 
 function createStatusBarItem() {
@@ -20,106 +52,140 @@ function createStatusBarItem() {
     return statusBarItem;
 }
 
+
+
 async function startOllama(): Promise<void> {
     try {
         await axios.get('http://localhost:11434/api/tags');
         
+        const modelName = await getModelName();
+        console.log('Selected model:', modelName);
+        
         try {
-            await axios.post(OLLAMA_API_URL, {
-                model: getModelName(),
+            // Test if model exists
+            const testResponse = await axios.post(OLLAMA_API_URL, {
+                model: modelName,
                 prompt: "test",
                 stream: false
             });
-        } catch {
-            // Create and show status bar immediately
-            const statusBar = createStatusBarItem();
-            statusBar.text = "$(sync~spin) Initializing download...";
-            statusBar.show();
+            console.log('Model test successful:', testResponse.status);
             
-            console.log('Starting model download...');
-            const child = exec(`ollama pull ${getModelName()}`);
+        } catch (error: any) {
+            console.log('Model test error:', {
+                message: error.message,
+                status: error.response?.status,
+                data: error.response?.data
+            });
             
-            // Debug stderr output
-            child.stderr?.on('data', (data: string) => {
-                const output = data.toString();
-                console.log('stderr:', output);
+            // Handle both 404 and 400 status codes for model download
+            if (error.response?.status === 404 || error.response?.status === 400 || 
+                (error.message && error.message.includes('model not found'))) {
                 
-                // Updated pattern to handle both MB and GB
-                const progressMatch = output.match(/(\d+)%.*?(\d+(?:\.\d+)?)\s*(MB|GB)\/(\d+(?:\.\d+)?)\s*(MB|GB)/);
-                if (progressMatch) {
-                    const [, progress, downloaded, downloadedUnit, total, totalUnit] = progressMatch;
-                    console.log('Progress match:', { progress, downloaded, downloadedUnit, total, totalUnit });
+                const statusBar = createStatusBarItem();
+                statusBar.text = "$(sync~spin) Initializing download...";
+                statusBar.show();
+                
+                console.log(`Starting download for model: ${modelName}`);
+                const child = exec(`ollama pull ${modelName}`);
+                
+                // Handle progress updates through stderr
+                child.stderr?.on('data', (data: string) => {
+                    const output = data.toString();
+                    console.log('Raw stderr:', output);
                     
-                    // Convert everything to GB for display
-                    const downloadedGB = downloadedUnit === 'GB' ? 
-                        parseFloat(downloaded) : 
-                        parseFloat(downloaded) / 1024;
+                    // Match progress pattern including both MB and GB
+                    const progressMatch = output.match(/(\d+)%.*?(\d+(?:\.\d+)?)\s*(MB|GB)\/(\d+(?:\.\d+)?)\s*(MB|GB)/);
+                    if (progressMatch) {
+                        const [, progress, downloaded, downloadedUnit, total, totalUnit] = progressMatch;
+                        console.log('Progress match:', { progress, downloaded, downloadedUnit, total, totalUnit });
                         
-                    const totalGB = totalUnit === 'GB' ? 
-                        parseFloat(total) : 
-                        parseFloat(total) / 1024;
-                    
-                    if (statusBarItem) {
-                        const newText = `$(sync~spin) Downloading DeepSeek model: ${downloadedGB.toFixed(2)}GB / ${totalGB.toFixed(2)}GB (${progress}%)`;
-                        console.log('Updating status bar:', newText);
-                        statusBarItem.text = newText;
-                    } else {
-                        console.log('Status bar item is undefined');
-                    }
-                } else {
-                    console.log('No progress match found in:', output);
-                }
-            });
-
-            await new Promise<void>((resolve, reject) => {
-                child.on('close', (code) => {
-                    console.log('Process closed with code:', code);
-                    if (code === 0) {
+                        // Convert to GB for display
+                        const downloadedGB = downloadedUnit === 'GB' ? 
+                            parseFloat(downloaded) : 
+                            parseFloat(downloaded) / 1024;
+                            
+                        const totalGB = totalUnit === 'GB' ? 
+                            parseFloat(total) : 
+                            parseFloat(total) / 1024;
+                        
                         if (statusBarItem) {
-                            statusBarItem.text = "$(check) Model ready";
-                            setTimeout(() => {
-                                if (statusBarItem) {
-                                    statusBarItem.hide();
-                                    statusBarItem.dispose();
-                                    statusBarItem = undefined;
-                                }
-                            }, 2000);
+                            const newText = `$(sync~spin) Downloading ${modelName}: ${downloadedGB.toFixed(2)}GB / ${totalGB.toFixed(2)}GB (${progress}%)`;
+                            console.log('Updating status bar:', newText);
+                            statusBarItem.text = newText;
                         }
-                        resolve();
-                    } else {
-                        reject(new Error(`Download failed with code ${code}`));
                     }
                 });
-                child.on('error', (error) => {
-                    console.error('Process error:', error);
-                    reject(error);
+
+                await new Promise<void>((resolve, reject) => {
+                    child.on('close', (code) => {
+                        console.log('Process closed with code:', code);
+                        if (code === 0) {
+                            if (statusBarItem) {
+                                statusBarItem.text = "$(check) Model ready";
+                                setTimeout(() => {
+                                    if (statusBarItem) {
+                                        statusBarItem.hide();
+                                        statusBarItem.dispose();
+                                        statusBarItem = undefined;
+                                    }
+                                }, 2000);
+                            }
+                            resolve();
+                        } else {
+                            reject(new Error(`Download failed with code ${code}. Model "${modelName}" may not exist.`));
+                        }
+                    });
+                    child.on('error', (error) => {
+                        console.error('Process error:', error);
+                        reject(error);
+                    });
                 });
-            });
+            } else {
+                throw error;
+            }
         }
-    } catch (error) {
-        console.error('Start Ollama error:', error);
+    } catch (error: any) {
+        console.error('Start Ollama error:', {
+            message: error.message,
+            status: error.response?.status,
+            data: error.response?.data
+        });
         if (statusBarItem) {
             statusBarItem.hide();
             statusBarItem.dispose();
             statusBarItem = undefined;
         }
-        vscode.window.showErrorMessage('Failed to start Ollama. Please make sure it is installed and running.');
+        if (error.response?.status === 400) {
+            vscode.window.showErrorMessage(`Invalid model name "${await getModelName()}". Please check the model name and try again.`);
+        } else {
+            vscode.window.showErrorMessage('Failed to start Ollama. Please make sure it is installed and running.');
+        }
         throw error;
     }
 }
 
+
 async function queryOllama(prompt: string, webview: vscode.Webview): Promise<string> {
     try {
+        const modelName = await getModelName();
+        console.log('Querying with model:', modelName);
+        
         const response = await axios.post(OLLAMA_API_URL, {
-            model: getModelName(),
+            model: modelName,
             prompt: prompt,
-            stream: true,
+            stream: true
         }, {
-            responseType: 'stream'
+            responseType: 'stream',
+            validateStatus: (status) => {
+                return status < 500; // Accept 400-level errors to handle them
+            }
         });
 
-        let fullResponse = '';
+        if (response.status === 400) {
+            throw new Error(`Invalid request for model "${modelName}". The model may not exist.`);
+        }
 
+        let fullResponse = '';
         return new Promise((resolve, reject) => {
             response.data.on('data', (chunk: Buffer) => {
                 try {
@@ -132,13 +198,8 @@ async function queryOllama(prompt: string, webview: vscode.Webview): Promise<str
                 }
             });
 
-            response.data.on('end', () => {
-                resolve(fullResponse);
-            });
-
-            response.data.on('error', (err: Error) => {
-                reject(err);
-            });
+            response.data.on('end', () => resolve(fullResponse));
+            response.data.on('error', reject);
         });
     } catch (error) {
         console.error('Error querying Ollama:', error);
@@ -209,7 +270,7 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {
-    // Clean up status bar item
+    cachedModelName = undefined; // Clear the cache
     if (statusBarItem) {
         statusBarItem.hide();
         statusBarItem.dispose();
