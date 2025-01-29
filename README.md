@@ -4,7 +4,7 @@
 
 # Seeker: DeepSeek-R1 Integration for VS Code
 
-Seeker enables seamless interaction with DeepSeek-R1 reasoning models directly within Visual Studio Code, leveraging the power of Ollama's local runtime. Designed for privacy, performance, and usability, Seeker offers a modern AI-assisted coding experience with no internet connection required. Whether you’re working on resource-constrained hardware or high-end systems, Seeker supports a range of DeepSeek-R1 models to fit your needs.
+Seeker enables seamless interaction with DeepSeek-R1 reasoning models directly within Visual Studio Code, leveraging the power of Ollama's local runtime. Designed for privacy, performance, and usability, Seeker offers a modern AI-assisted coding experience with no internet connection required. Whether you’re working on resource-constrained hardware or high-end systems, Seeker supports a range of DeepSeek-R1 models to fit your needs. [Published here.](https://marketplace.visualstudio.com/items?itemName=SatwikSingh.seeker)
 
 ---
 
