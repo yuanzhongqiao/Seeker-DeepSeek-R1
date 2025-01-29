@@ -1,8 +1,14 @@
-<p align="center">
-  <img src="images/Seeker.png" width="900" alt="Seeker">
-</p>
+<br>
+<div style="display: flex; flex-direction: column; gap: 20px;">
+  <div style="display: flex; justify-content: space-between;">
+    <img src="images/Seeker.png" style="border-radius: 15px; width: 48%; height: auto;" />
+    <img src="images/Seekerv2.png" style="border-radius: 15px; width: 48%; height: auto;" />
+  </div>
 
-# Seeker: DeepSeek-R1 Integration for VS Code
+</div>
+<br>
+
+# Seeker: DeepSeek-R1 (+ other LLMs) Integration for VS Code
 
 Seeker enables seamless interaction with DeepSeek-R1 reasoning models directly within Visual Studio Code, leveraging the power of Ollama's local runtime. Designed for privacy, performance, and usability, Seeker offers a modern AI-assisted coding experience with no internet connection required. Whether you’re working on resource-constrained hardware or high-end systems, Seeker supports a range of DeepSeek-R1 models to fit your needs. [Published here.](https://marketplace.visualstudio.com/items?itemName=SatwikSingh.seeker)
 
@@ -10,9 +16,12 @@ Seeker enables seamless interaction with DeepSeek-R1 reasoning models directly w
 
 ## Key Features
 
+> 🚀 **NEW:** Seeker is now **LLM Agnostic**!  
+> Supports all models available through Ollama, including Llama, DeepSeek, Gemma, and Mistral.
+
 - **Local Model Execution**: Run DeepSeek-R1 models entirely on your local machine using Ollama runtime. No data ever leaves your environment.
+- **LLM Agnostic**: Compatible with any model available through Ollama (Llama, DeepSeek, Gemma, Mistral, etc.)
 - **Model Flexibility**: Supports all DeepSeek-R1 model sizes—from 1.5B to 671B parameters.
-- **[NEW] LLM Agnostic**: Compatible with any model available through Ollama (Llama, DeepSeek, Gemma, Mistral, etc.)
 - **Privacy-First AI**: Offline functionality ensures complete data privacy.
 - **Integrated Chat Interface**: Engage with a clean, modern chat interface embedded directly into VS Code.
 - **Hardware-Based Performance**: Select models based on your machine’s capabilities.
@@ -93,17 +102,56 @@ ollama pull gemma:7b       # Google's Gemma
 ---
 ## Running Seeker
 
+## Screenshots  
 <br>
-<p align="center">
-    <img src="ss/SS1.png" style="border-radius: 8px; width: 80%;" />
-</p>
-<p align="center">
-    <img src="ss/SS2.png" style="border-radius: 8px; width: 80%;" />
-</p>
-<p align="center">
-    <img src="ss/SS3.png" style="border-radius: 8px; width: 80%;" />
-</p>
+<div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;">
+  
+  <div style="width: 30%;">
+    <a href="ss/SS1.png" target="_blank">
+      <img src="ss/SS1.png" style="border-radius: 8px; width: 100%;" />
+    </a>
+    <p align="center"><b>Main Chat UI</b></p>
+  </div>
+
+  <div style="width: 30%;">
+    <a href="ss/sidebar.png" target="_blank">
+      <img src="ss/sidebar.png" style="border-radius: 8px; width: 100%;" />
+    </a>
+    <p align="center"><b>Sidebar Menu</b></p>
+  </div>
+
+  <div style="width: 30%;">
+    <a href="ss/custom-models.png" target="_blank">
+      <img src="ss/custom-models.png" style="border-radius: 8px; width: 100%;" />
+    </a>
+    <p align="center"><b>Model Selection</b></p>
+  </div>
+  
+  <div style="width: 30%;">
+    <a href="ss/customdemo1.png" target="_blank">
+      <img src="ss/customdemo1.png" style="border-radius: 8px; width: 100%;" />
+    </a>
+    <p align="center"><b>Custom Model Demo 1</b></p>
+  </div>
+
+  <div style="width: 30%;">
+    <a href="ss/customdemo2.png" target="_blank">
+      <img src="ss/customdemo2.png" style="border-radius: 8px; width: 100%;" />
+    </a>
+    <p align="center"><b>Custom Model Demo 2</b></p>
+  </div>
+
+
+  <div style="width: 30%;">
+    <a href="ss/statusbar.png" target="_blank">
+      <img src="ss/statusbar.png" style="border-radius: 8px; width: 100%;" />
+    </a>
+    <p align="center"><b>Status Bar Progress</b></p>
+  </div>
+
+</div>
 <br>
+
 
 ---
 
