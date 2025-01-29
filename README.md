@@ -82,6 +82,21 @@ ollama run deepseek-r1:7b     # Recommended model
      - Update the model name (e.g., `deepseek-r1:7b`).
 
 ---
+## Running Seeker
+
+<br>
+<p align="center">
+    <img src="ss/SS1.png" style="border-radius: 8px; width: 80%;" />
+</p>
+<p align="center">
+    <img src="ss/SS2.png" style="border-radius: 8px; width: 80%;" />
+</p>
+<p align="center">
+    <img src="ss/SS3.png" style="border-radius: 8px; width: 80%;" />
+</p>
+<br>
+
+---
 
 ## Known Issues
 
@@ -121,5 +136,5 @@ Contributions are welcome! If you have ideas, bug fixes, or feature requests, fe
 
 ---
 
-Experience the future of AI-assisted coding with Seeker. Unlock the full potential of DeepSeek-R1 models, privately and efficiently, right in your editor.
+Experience the future of AI-assisted coding with Seeker. Unlock the full potential of DeepSeek-R1 models, privately and efficiently, right on your machine.
 
